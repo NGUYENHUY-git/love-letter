@@ -1,0 +1,155 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #050206;           /* near-black, like the terminal */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 60px;
+  color: #fff;
+  font-family: "Lato", sans-serif;
+  overflow: hidden;
+}
+
+.envelope-wrapper { height: 300px; padding-top: 120px; }
+
+/* layers */
+#heartCanvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
+.front-layer { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 60px; }
+
+/* ---------- envelope body ---------- */
+#envelope {
+  position: relative;
+  width: 280px;
+  height: 180px;
+  margin: auto;
+  background-color: #f08f86;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.7), 0 0 40px rgba(255, 40, 70, 0.25);
+}
+
+/* ---------- top flap (triangle) ---------- */
+.front { position: absolute; width: 0; height: 0; z-index: 3; }
+
+.flap {
+  border-left: 140px solid transparent;
+  border-right: 140px solid transparent;
+  border-top: 98px solid #d9534f;
+  transform-origin: top;
+  transition: transform 0.4s 0.8s, z-index 0.2s 0.8s;
+  /* closed: sits on top, open: flips back behind letter */
+}
+
+/* ---------- front pocket (two side triangles + bottom triangle) ---------- */
+.pocket {
+  border-left: 140px solid #f6a39b;
+  border-right: 140px solid #f6a39b;
+  border-bottom: 90px solid #ff7360;
+  border-top: 90px solid transparent;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+  z-index: 3;
+}
+
+/* letter */
+:root { --letter-font: 15px; }           /* <- make the text bigger or smaller here */
+
+.front { pointer-events: none; }         /* lets you scroll the letter through the envelope front */
+
+.letter {
+  position: absolute;
+  left: 20px;
+  bottom: 0;
+  width: 240px;
+  height: 160px;
+  padding: 14px 16px;
+  background: #fff;
+  border-radius: 6px;
+  z-index: 2;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.4s 0.4s, height 0.4s 0.4s, width 0.4s 0.4s, left 0.4s 0.4s, z-index 0.2s 0.4s;
+}
+
+.to {
+  align-self: flex-start;
+  font: 600 12px "Dancing Script", cursive;
+  color: #5a2d2d;
+  background: #fbe2e1;
+  padding: 1px 8px;
+  margin-bottom: 8px;
+}
+
+.letter-body {
+  flex: 1;
+  overflow-y: auto;                      /* scrolls if the message is very long */
+  padding-right: 4px;
+  font-family: "Dancing Script", cursive;
+  font-size: var(--letter-font);
+  line-height: 1.5;
+  color: #5a2d2d;
+  text-align: left;
+  scrollbar-width: thin;
+  scrollbar-color: #f6a39b transparent;
+}
+.letter-body p { margin: 0 0 8px; }
+
+/* open / close states */
+.open  .flap   { transform: rotateX(180deg); transition: transform 0.4s, z-index 0.2s; z-index: 1; }
+.open  .letter { transform: translateY(-110px); height: 300px; width: 260px; left: 10px; transition: transform 0.4s 0.6s, height 0.4s 0.6s, width 0.4s 0.6s, left 0.4s 0.6s, z-index 0.2s 0.6s; z-index: 2; }
+.close .flap   { transform: rotateX(0deg);   transition: transform 0.4s 0.6s, z-index 0.2s 0.8s; z-index: 3; }
+.close .letter { transform: translateY(0);   transition: transform 0.4s, height 0.4s, width 0.4s, left 0.4s, z-index 0.2s; }
+
+/* small floating hearts */
+.hearts { position: absolute; top: 0; left: 0; width: 100%; height: 0; z-index: 4; pointer-events: none; }
+
+.heart {
+  position: absolute;
+  bottom: 0;
+  width: 14px;
+  height: 14px;
+  background: #e6007e;
+  transform: rotate(-45deg);
+  opacity: 0;
+  animation: float 3s ease-in forwards;
+}
+.heart::before, .heart::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: #e6007e;
+  border-radius: 50%;
+}
+.heart::before { top: -7px; left: 0; }
+.heart::after  { left: 7px;  top: 0; }
+
+@keyframes float {
+  0%   { opacity: 0;   transform: translateY(0)      rotate(-45deg) scale(.4); }
+  15%  { opacity: 1; }
+  100% { opacity: 0;   transform: translateY(-260px) rotate(-45deg) scale(1.6); }
+}
+
+/* ---------- buttons ---------- */
+.reset { display: flex; gap: 20px; }
+
+.reset button {
+  width: 100px;
+  padding: 10px 0;
+  font: 900 13px "Lato", sans-serif;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  color: #ff8a80;
+  background: rgba(5, 2, 6, .6);
+  border: 2px solid #e8776f;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background .2s, color .2s;
+}
+.reset button:hover,
+.reset button.active { background: #d9534f; color: #fff; }
